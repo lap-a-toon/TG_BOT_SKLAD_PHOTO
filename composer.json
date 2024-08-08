@@ -1,0 +1,22 @@
+{
+    "name": "xander/tg_bot_sklad_photo",
+    "autoload": {
+        "psr-4": {
+            "Xander\\TgBotSkladPhoto\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Xander Lexx",
+            "email": "lap-a-toon@yandex.ru"
+        }
+    ],
+    "require": {
+        "longman/telegram-bot": "^0.83.1"
+    },
+    "config": {
+        "platform": {
+            "php": "7.4"
+        }
+    }
+}
