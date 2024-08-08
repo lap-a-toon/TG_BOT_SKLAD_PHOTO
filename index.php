@@ -81,13 +81,14 @@ foreach ($updates as $update) {
         case 'document':
             if(!isset($usersAccepted[$chatId])) break; // Если пользователя нет в списке разрешенных - пропускаем
             // обработка файла
-            get_files($telegram, $message);
-            if(!in_array($chatId, $usersAlerted)){
-                $usersAlerted[]=$chatId;
-                $response = Request::sendMessage([
-                    'chat_id' => $chatId,
-                    'text' => "Принимаем файлы",
-                ]);
+            if(get_files($telegram, $message)){
+                if(!in_array($chatId, $usersAlerted)){
+                    $usersAlerted[]=$chatId;
+                    $response = Request::sendMessage([
+                        'chat_id' => $chatId,
+                        'text' => "Принимаем файлы",
+                    ]);
+                }
             }
             break;
         default:
@@ -100,7 +101,7 @@ foreach ($updates as $update) {
  *
  * @param  Telegram $telegram
  * @param  Message $message
- * @return void
+ * @return bool
  */
 function get_files($telegram, $message){
     $download_path = $telegram->getDownloadPath();
@@ -118,14 +119,29 @@ function get_files($telegram, $message){
             echo "trouble creating dir MAIN_PHOTO_FOLDER/$pathToSave";
         }
         $date = new DateTime('now',TIME_ZONE);
-        $ext = pathinfo($download_path . '/' . $file->getResult()->getFilePath(), PATHINFO_EXTENSION);
-        rename($download_path . '/' . $file->getResult()->getFilePath(), MAIN_PHOTO_FOLDER . '/'. $pathToSave . '/' . $message->getMessageId() . '-' . $date->format('H-i-s') . '.' . $ext);
+        $ext = mb_strtolower(pathinfo($download_path . '/' . $file->getResult()->getFilePath(), PATHINFO_EXTENSION));
+        if(in_array($ext,['jpg','jpeg','png','bmp'])){
+            rename($download_path . '/' . $file->getResult()->getFilePath(), MAIN_PHOTO_FOLDER . '/'. $pathToSave . '/' . $message->getMessageId() . '-' . $date->format('H-i-s') . '.' . $ext);
+            return true;
+        }else{
+            echo "Wrong extention".PHP_EOL;
+            echo $message->getMessageId();
+            Request::sendMessage([
+                'chat_id' => $message->getFrom()->getId(),
+                'text' => "Мы не можем принять такой файл",
+                'reply_to_message_id' => $message->getMessageId(),
+            ]);
+            unlink($download_path . '/' . $file->getResult()->getFilePath());
+            return false;
+        }
     } else {
         $text = 'ОШИБКА!\r\nПри получении ваших фото что-то пошло не так\r\nПопробуйте еще раз, если снова получите ошибку - сообщите администрации.';
         Request::sendMessage([
             'chat_id' => $message->getChat()->getId(),
             'text' => $text,
+            'reply_to_message_id' => $message->getMessageId(),
         ]);
+        return false;
     }
 }
 /**
