@@ -40,29 +40,49 @@ foreach ($updates as $update) {
     $fromId = $from->getId(); // Получаем ID пользователя
     $fromName = $from->getFirstName();
     $messageType = $message->getType();
+    $messageText = mb_strtolower($message->text); // сразу переводим входящие сообщения в строчные
+
     echo "Message from: {$fromName}, Message type: {$messageType}" . PHP_EOL;
 
     switch ($messageType){
         case 'command':
             // reaction on command
             // Отправляем ответ пользователю
-            if( in_array(mb_strtolower($message->text),['/start']) ){
+            if( in_array($messageText,['/start']) ){
                 $response = Request::sendMessage([
                     'chat_id' => $chatId,
                     'text' => "Ваш ID: `{$fromId}`\r\nСообщите его администрации",
                     'parse_mode'=>'Markdown'
                 ]);
+            }elseif(in_array($messageText,['/help'])){
+                doHelpMsg($chatId);
             }
             break;
         case 'text':
             // reaction on text msg
             // Отправляем ответ пользователю
-            if( in_array(mb_strtolower($message->text),['/start','привет','я']) ){
+            if( in_array($messageText,['привет','я']) ){
                 $response = Request::sendMessage([
                     'chat_id' => $chatId,
                     'text' => "Ваш ID: `{$fromId}`\r\nСообщите его администрации",
                     'parse_mode'=>'Markdown'
                 ]);
+            }elseif(in_array($messageText,['доступ'])){
+                if(isset($usersAccepted[$chatId])){
+                    $response = Request::sendMessage([
+                        'chat_id' => $chatId,
+                        'text' => "__Можно__",
+                        'parse_mode'=>'Markdown'
+                    ]);
+                }else{
+                    $response = Request::sendMessage([
+                        'chat_id' => $chatId,
+                        'text' => "__Доступа нет__\r\nДля ускорения получения доступа свяжитесь с администрацией.",
+                        'parse_mode'=>'Markdown'
+                    ]);
+                }
+            }elseif(in_array($messageText,['помощь'])){
+                doHelpMsg($chatId);
             }
             break;
         case 'photo':
@@ -162,4 +182,32 @@ function getPathToSave($user,$message){
      */ 
     $answer = $usersAccepted[$user->getId()]['sklad'] . '/' . $date->format('Y/m/d') . '/' . $usersAccepted[$user->getId()]['fio'];
     return $answer;
+}
+
+function doHelpMsg($chatId){
+    global $usersAccepted;
+    if (isset($usersAccepted[$chatId])){
+        Request::sendMessage([
+            'chat_id' => $chatId,
+            'text' => "
+<b>Бот для сбора фотографий.</b>
+
+Если вы получили это сообщение, значит у вас уже есть право доступа к его функционалу.
+
+<b>ВАЖНО!</b>
+Фотографии следует отправлять в <u>несжатом виде</u>, т.к. при стандартной отправке фотографии сжимаются и теряется качество снимков.
+
+При фотографировании процесса отгрузки:
+1. Сфотографировать отгрузочный документ и сразу отправить фото
+2. Сфотографировать гос.номер автомобиля и сразу отправить фото
+3. Тщательно отснять погруженный товар размещенный в машине. Обязательно именно в машине, как доказательство, что товар был погружен и это было сделано корректно. И отправить фотографии в бот
+
+При фотографировании Сборки:
+1. Сфотографировать документ-сборку таким образом, чтобы номер был читаем, и сразу отправить фото
+2. Заснять собранный товар таким образом, чтобы было видно, что все позиции собраны. Если имеются метки на паллетах, позволяющие идентифицировать сборку - заснять.
+3. Отправить фотографии боту.
+                ",
+            'parse_mode'=>'HTML',
+        ]);
+    }
 }
