@@ -55,7 +55,8 @@ foreach ($updates as $update) {
                     'parse_mode'=>'Markdown'
                 ]);
             }elseif(in_array($messageText,['/help'])){
-                doHelpMsg($chatId);
+                if(isset($usersAccepted[$chatId]))
+                    doHelpMsg($chatId);
             }
             break;
         case 'text':
@@ -82,7 +83,8 @@ foreach ($updates as $update) {
                     ]);
                 }
             }elseif(in_array($messageText,['помощь'])){
-                doHelpMsg($chatId);
+                if(isset($usersAccepted[$chatId]))
+                    doHelpMsg($chatId);
             }
             break;
         case 'photo':
@@ -185,11 +187,9 @@ function getPathToSave($user,$message){
 }
 
 function doHelpMsg($chatId){
-    global $usersAccepted;
-    if (isset($usersAccepted[$chatId])){
-        Request::sendMessage([
-            'chat_id' => $chatId,
-            'text' => "
+    Request::sendMessage([
+        'chat_id' => $chatId,
+        'text' => "
 <b>Бот для сбора фотографий.</b>
 
 Если вы получили это сообщение, значит у вас уже есть право доступа к его функционалу.
@@ -206,8 +206,7 @@ function doHelpMsg($chatId){
 1. Сфотографировать документ-сборку таким образом, чтобы номер был читаем, и сразу отправить фото
 2. Заснять собранный товар таким образом, чтобы было видно, что все позиции собраны. Если имеются метки на паллетах, позволяющие идентифицировать сборку - заснять.
 3. Отправить фотографии боту.
-                ",
-            'parse_mode'=>'HTML',
-        ]);
-    }
+        ",
+        'parse_mode'=>'HTML',
+    ]);
 }
