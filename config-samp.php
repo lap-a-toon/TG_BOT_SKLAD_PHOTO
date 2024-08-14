@@ -9,6 +9,7 @@ define('TIME_ZONE',new DateTimeZone('Europe/Moscow'));
 // Указываем каталог, в который будут сохраняться фотографии
 define('MAIN_PHOTO_FOLDER',__DIR__.'/YOUR_FINALLY_COLLECTING_FOLDER'); // Если необходим абсолютный путь - убираем __DIR__.
 
+define('EXTENSIONS_ACCEPTED',['jpg','jpeg','png','bmp','heic','avi','mp4']);
 
 /**
  * Массив пользователей, заполнять вручную по шаблону

@@ -120,7 +120,7 @@ function get_files($telegram, $message){
         }
         $date = new DateTime('now',TIME_ZONE);
         $ext = mb_strtolower(pathinfo($download_path . '/' . $file->getResult()->getFilePath(), PATHINFO_EXTENSION));
-        if(in_array($ext,['jpg','jpeg','png','bmp','avi','mp4'])){
+        if(in_array($ext,EXTENSIONS_ACCEPTED)){
             rename($download_path . '/' . $file->getResult()->getFilePath(), MAIN_PHOTO_FOLDER . '/'. $pathToSave . '/' . $message->getMessageId() . '-' . $date->format('H-i-s') . '.' . $ext);
             return true;
         }else{
