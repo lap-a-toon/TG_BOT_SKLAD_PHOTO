@@ -1,0 +1,10 @@
+{
+    "user_tg_id":{
+        "fio":"LastName-FirstName",
+        "sklad":"BaseName/Sklad-№"
+    },
+    "user_tg_id2":{
+        "fio":"LastName2-FirstName2",
+        "sklad":"BaseName/Sklad-№№"
+    }
+}

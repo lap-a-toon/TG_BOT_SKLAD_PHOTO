@@ -5,3 +5,5 @@ vendor
 Download
 tg_bot_sklad.sh
 log_sklad_photo.log
+users.json
+conf_srv.php
