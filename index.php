@@ -138,12 +138,19 @@ function get_files($telegram, $message){
     if ($file->isOk() && Request::downloadFile($file->getResult())) {
         $pathToSave = getPathToSave($message->getFrom(), $message);
         if (!@mkdir(MAIN_PHOTO_FOLDER . '/' . $pathToSave, 0755, true) && !is_dir(MAIN_PHOTO_FOLDER . '/' . $pathToSave)) { // создаём папку, если ее нет
-            echo "trouble creating dir MAIN_PHOTO_FOLDER/$pathToSave";
+            echo "trouble creating dir MAIN_PHOTO_FOLDER/$pathToSave" . PHP_EOL;
         }
         $date = new DateTime('now',TIME_ZONE);
-        $ext = mb_strtolower(pathinfo($download_path . '/' . $file->getResult()->getFilePath(), PATHINFO_EXTENSION));
+        $downloadedFile = $download_path . '/' . $file->getResult()->getFilePath();
+        $ext = mb_strtolower(pathinfo($downloadedFile, PATHINFO_EXTENSION));
         if(in_array($ext,EXTENSIONS_ACCEPTED)){
-            rename($download_path . '/' . $file->getResult()->getFilePath(), MAIN_PHOTO_FOLDER . '/'. $pathToSave . '/' . $message->getMessageId() . '-' . $date->format('H-i-s') . '.' . $ext);
+            if(preg_match('/[h|H][e|E][i|I][c|C]/',$ext)){
+                if(function_exists('heic_to_jpg')){
+                    $downloadedFile = heic_to_jpg($downloadedFile); // returns filepath
+                    $ext = 'jpg';
+                }
+            }
+            rename($downloadedFile, MAIN_PHOTO_FOLDER . '/'. $pathToSave . '/' . $message->getMessageId() . '-' . $date->format('H-i-s') . '.' . $ext);
             return true;
         }else{
             echo "Wrong extention".PHP_EOL;
@@ -153,7 +160,7 @@ function get_files($telegram, $message){
                 'text' => "Мы не можем принять такой файл",
                 'reply_to_message_id' => $message->getMessageId(),
             ]);
-            unlink($download_path . '/' . $file->getResult()->getFilePath());
+            unlink($downloadedFile);
             return false;
         }
     } else {

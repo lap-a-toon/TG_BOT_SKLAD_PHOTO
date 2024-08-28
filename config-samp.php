@@ -11,6 +11,8 @@ define('MAIN_PHOTO_FOLDER',__DIR__.'/YOUR_FINALLY_COLLECTING_FOLDER'); // Есл
 
 define('EXTENSIONS_ACCEPTED',['jpg','jpeg','png','bmp','heic','avi','mp4']);
 
+include_once(__DIR__."/addon-heic-to-jpg.php");
+
 function getBotUsers(){
     $json = file_get_contents(__DIR__.'/users.json'); 
 
